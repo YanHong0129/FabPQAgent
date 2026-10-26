@@ -1,0 +1,2 @@
+# s059 chamber pressure drift
+Sensor s059 tracks chamber base pressure before deposition. Failing lots average about 8.5 on s059 versus 2.6 for passing lots, the strongest single signal in this dataset. A sustained rise usually means a slow vacuum leak or a degrading pump. Check: run spc_check on s059 for a shift, compare the first failing lot's timestamp with the last pump maintenance, and pull the leak-check log. Action: hold the chamber if s059 breaks the upper control limit on two consecutive lots.

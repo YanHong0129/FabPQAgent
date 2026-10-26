@@ -1,0 +1,10 @@
+{"id": "q01", "question": "What is the overall fail rate across all lots?", "must_mention": [], "expected_tool": "query_lots"}
+{"id": "q02", "question": "Which week had the highest number of failing lots?", "must_mention": [], "expected_tool": "query_lots"}
+{"id": "q03", "question": "Lot 2 failed. Which sensors look most unusual on it?", "must_mention": [], "expected_tool": "top_features"}
+{"id": "q04", "question": "Is sensor s059 in statistical control?", "must_mention": [], "expected_tool": "spc_check"}
+{"id": "q05", "question": "What is the predicted fail probability for lot 100, and did it actually fail?", "must_mention": [], "expected_tool": "predict_fail"}
+{"id": "q06", "question": "Has sensor s519 shifted compared with the baseline period?", "must_mention": [], "expected_tool": "spc_check"}
+{"id": "q07", "question": "What should I check if s510 is running high?", "must_mention": [], "expected_tool": "search_notes"}
+{"id": "q08", "question": "How many lots were produced in August 2008, and how many failed?", "must_mention": [], "expected_tool": "query_lots"}
+{"id": "q09", "question": "Pick the last five failing lots and tell me which sensor they have in common.", "must_mention": [], "expected_tool": "top_features"}
+{"id": "q10", "question": "The fail rate seems high recently. Is it, and what is the likely cause?", "must_mention": [], "expected_tool": "query_lots"}

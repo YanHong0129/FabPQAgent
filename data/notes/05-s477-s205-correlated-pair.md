@@ -1,0 +1,2 @@
+# s477 and s205 correlated drift
+Sensors s477 and s205 often move together and both run higher on failing lots (s477 about 8.4 vs 6.1, s205 about 11.4 vs 8.9). A drift in both at once suggests a shared upstream cause such as a supply pressure change, not two separate faults. Check correlation between the two sensors on recent lots. Action: investigate the shared facility supply before touching either tool.

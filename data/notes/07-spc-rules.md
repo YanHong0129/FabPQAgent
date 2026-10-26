@@ -1,0 +1,2 @@
+# SPC rules used on this line
+Control limits come from a stable baseline period: centre line = baseline mean, limits = mean plus or minus 3 sigma. Rule 1: one point beyond 3 sigma means out of control. Rule of eight: eight points in a row on one side of the centre means the process has shifted even if no limit is crossed. A shift is often more important than a single spike because it affects every lot after it.

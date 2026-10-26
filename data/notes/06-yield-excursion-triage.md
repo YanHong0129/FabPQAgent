@@ -1,0 +1,2 @@
+# Yield excursion triage checklist
+When the fail rate jumps: 1) Confirm it is real: compare the recent fail rate with the long-run rate (about 6.6%) using query_lots. 2) Find when it started: group fails by day. 3) Find what failing lots share: unusual sensors via top_features on several failing lots. 4) Check those sensors with spc_check for limit breaks or a shift. 5) Only then recommend an action, with the evidence.

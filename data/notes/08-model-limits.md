@@ -1,0 +1,2 @@
+# How far to trust the fail prediction model
+The fail model is trained on historical lots and reaches roughly 2 to 3 times the PR-AUC of random guessing. It is a screening aid, not a verdict. A high predicted fail probability is a reason to look at the lot's unusual sensors, never a reason to scrap a lot on its own. Always pair a prediction with top_features evidence and the actual label when it exists.

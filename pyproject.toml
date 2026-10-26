@@ -1,0 +1,28 @@
+[project]
+name = "fabpqagent"
+version = "0.1.0"
+description = "Product-quality troubleshooting agent over semiconductor fab data (SECOM)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.5.4",
+    "openai>=3.37.0",
+    "pandas>=3.1.0",
+    "python-dotenv>=1.2.4",
+    "scikit-learn>=1.9.1",
+    "streamlit>=1.66.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.1,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["live: calls the real model via OpenRouter (free models, needs OPENROUTER_API_KEY)"]
+addopts = "-m 'not live'"
