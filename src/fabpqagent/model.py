@@ -11,9 +11,12 @@ Things to be ready to explain in the interview:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
+import joblib
 import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import average_precision_score, precision_score, recall_score
@@ -21,11 +24,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from fabpqagent.data import sensor_columns
+from fabpqagent.data import ROOT, sensor_columns
 
+MODEL_PATH = ROOT / "data" / "model.joblib"   # app.py loads the model from here
 MAX_MISSING_FRACTION = 0.5
 TEST_SIZE = 0.25
 LR_MAX_ITER = 2000                # ~450 scaled features need more than the default 100 iterations
+RF_TREES = 500                    # more trees = more stable probabilities; ~2s to fit here
 PLACEHOLDER_THRESHOLD = 0.2       # replaced in Step 7 by a threshold chosen from the PR curve
 
 
@@ -75,9 +80,17 @@ def train(df: pd.DataFrame, seed: int = 0) -> TrainedModel:
         X, y, test_size=TEST_SIZE, stratify=y, random_state=seed
     )
 
-    pipeline = _logistic_pipeline(seed).fit(X_train, y_train)
     threshold = PLACEHOLDER_THRESHOLD
-    metrics = _evaluate(pipeline, X_test, y_test, threshold)
+    builders = {"logistic_regression": _logistic_pipeline, "random_forest": _forest_pipeline}
+    fitted = {name: build(seed).fit(X_train, y_train) for name, build in builders.items()}
+    pr_aucs = {name: _evaluate(p, X_test, y_test, threshold)["pr_auc"] for name, p in fitted.items()}
+    best = max(pr_aucs, key=pr_aucs.get)
+
+    pipeline = fitted[best]
+    metrics = {
+        **_evaluate(pipeline, X_test, y_test, threshold),
+        **{f"pr_auc_{name}": score for name, score in pr_aucs.items()},  # keep both for the README
+    }
 
     return TrainedModel(
         pipeline=pipeline,
@@ -94,6 +107,15 @@ def _logistic_pipeline(seed: int) -> Pipeline:
         ("impute", SimpleImputer(strategy="median")),
         ("scale", StandardScaler()),
         ("clf", LogisticRegression(class_weight="balanced", max_iter=LR_MAX_ITER, random_state=seed)),
+    ])
+
+
+def _forest_pipeline(seed: int) -> Pipeline:
+    return Pipeline([
+        ("impute", SimpleImputer(strategy="median")),   # no scaler: tree splits don't care about scale
+        ("clf", RandomForestClassifier(
+            n_estimators=RF_TREES, class_weight="balanced_subsample", random_state=seed, n_jobs=-1,
+        )),
     ])
 
 
@@ -116,7 +138,8 @@ def _importances(pipeline: Pipeline, features: list[str]) -> pd.Series:
 
 def predict_fail(model: TrainedModel, lot: pd.Series) -> float:
     """Probability (0-1) that this lot fails. `lot` is one row of the lots table."""
-    raise NotImplementedError
+    row = lot[model.features].astype(float).to_frame().T  # one-row DataFrame, training column order
+    return float(model.pipeline.predict_proba(row)[0, 1])
 
 
 def top_features(model: TrainedModel, lot: pd.Series, k: int = 5, candidates: int = 30) -> list[dict[str, float | str]]:
@@ -126,18 +149,43 @@ def top_features(model: TrainedModel, lot: pd.Series, k: int = 5, candidates: in
     sorted by abs(z) descending. Skip sensors where the lot's value is missing.
     z = (value - pass_mean) / pass_std
     """
-    raise NotImplementedError
+    stats = model.pass_stats
+    scored = [
+        {
+            "sensor": sensor,
+            "value": float(lot[sensor]),
+            "pass_mean": float(stats.at[sensor, "mean"]),
+            "z": float((lot[sensor] - stats.at[sensor, "mean"]) / stats.at[sensor, "std"]),
+        }
+        for sensor in model.importances.index[:candidates]
+        if pd.notna(lot[sensor]) and stats.at[sensor, "std"] > 0  # skip missing values; zero spread -> z undefined
+    ]
+    return sorted(scored, key=lambda f: abs(f["z"]), reverse=True)[:k]
 
 
 def save(model: TrainedModel, path) -> None:
     """Hint: joblib.dump (ships with scikit-learn)."""
-    raise NotImplementedError
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(model, path)
 
 
 def load(path) -> TrainedModel:
-    raise NotImplementedError
+    model = joblib.load(path)  # unpickling runs code: only load files you created yourself
+    if not isinstance(model, TrainedModel):
+        raise TypeError(f"{path} does not contain a TrainedModel (got {type(model).__name__})")
+    return model
 
 
 if __name__ == "__main__":
-    # TODO: train on db.load_lots(), print metrics, save to data/model.joblib
-    raise NotImplementedError
+    # Import this module by its package name. Objects built by the `__main__` copy would be pickled
+    # as `__main__.TrainedModel`, which app.py could not find when it unpickles the file.
+    from fabpqagent import model as fab_model
+    from fabpqagent.db import load_lots
+
+    trained = fab_model.train(load_lots())
+    print(f"model: {type(trained.pipeline[-1]).__name__}   threshold: {trained.threshold}")
+    for name, value in trained.metrics.items():
+        print(f"  {name:28s} {value:.3f}")
+    fab_model.save(trained, fab_model.MODEL_PATH)
+    print(f"saved -> {fab_model.MODEL_PATH}")

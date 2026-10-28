@@ -7,3 +7,5 @@ data/*.db
 data/memory.json
 eval/results*.json
 .DS_Store
+data/*.joblib
+~$*
