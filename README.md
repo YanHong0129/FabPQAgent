@@ -58,7 +58,15 @@ _TODO Day 3._ Model: test PR-AUC __ vs baseline 0.066; precision __ / recall __ 
 Agent on 10 golden questions: mention recall __, expected-tool rate __, median latency __s, total tokens __.
 
 ## Design decisions
-- Why PR-AUC, and how the threshold was chosen:
+- Why PR-AUC, and how the threshold was chosen: only 6.6% of lots fail, so "always pass" scores
+  93.4% accuracy while catching nothing. PR-AUC measures how well fails are ranked above passes,
+  and its baseline is the fail rate (0.066), so the random forest's 0.186 reads as ~2.8x better than
+  random (logistic regression: 0.149). The threshold is a business decision: I assumed a missed bad
+  lot costs about 10 false alarms and picked the lowest-cost threshold on out-of-fold training
+  predictions, never on the test set. Any ratio from 5 to 15 lands at ~0.09, so the choice is not
+  sensitive to that guess. At 0.09 the test set gives precision 0.17 / recall 0.46 (12 of 26 fails,
+  ~2.6x the hit rate of random inspection). The test set has only 26 fails, so these numbers are
+  noisy, and the forest's probabilities are not calibrated (it rarely scores above 0.3).
 - Why BM25 over embeddings for these notes:
 - Why two roles (investigator + writer) instead of one agent:
 - How tool errors are handled and why:

@@ -15,12 +15,13 @@ from pathlib import Path
 from typing import Any
 
 import joblib
+import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import average_precision_score, precision_score, recall_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold, cross_val_predict, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
@@ -31,7 +32,8 @@ MAX_MISSING_FRACTION = 0.5
 TEST_SIZE = 0.25
 LR_MAX_ITER = 2000                # ~450 scaled features need more than the default 100 iterations
 RF_TREES = 500                    # more trees = more stable probabilities; ~2s to fit here
-PLACEHOLDER_THRESHOLD = 0.2       # replaced in Step 7 by a threshold chosen from the PR curve
+COST_RATIO = 10                   # assumed: one missed bad lot costs as much as 10 false alarms (5-15 give ~same threshold)
+CV_FOLDS = 5
 
 
 @dataclass(frozen=True)
@@ -80,13 +82,15 @@ def train(df: pd.DataFrame, seed: int = 0) -> TrainedModel:
         X, y, test_size=TEST_SIZE, stratify=y, random_state=seed
     )
 
-    threshold = PLACEHOLDER_THRESHOLD
     builders = {"logistic_regression": _logistic_pipeline, "random_forest": _forest_pipeline}
     fitted = {name: build(seed).fit(X_train, y_train) for name, build in builders.items()}
-    pr_aucs = {name: _evaluate(p, X_test, y_test, threshold)["pr_auc"] for name, p in fitted.items()}
+    pr_aucs = {
+        name: float(average_precision_score(y_test, p.predict_proba(X_test)[:, 1])) for name, p in fitted.items()
+    }
     best = max(pr_aucs, key=pr_aucs.get)
 
     pipeline = fitted[best]
+    threshold = _choose_threshold(pipeline, X_train, y_train, seed)
     metrics = {
         **_evaluate(pipeline, X_test, y_test, threshold),
         **{f"pr_auc_{name}": score for name, score in pr_aucs.items()},  # keep both for the README
@@ -100,6 +104,20 @@ def train(df: pd.DataFrame, seed: int = 0) -> TrainedModel:
         pass_stats=X_train[y_train == 0].agg(["mean", "std"]).T,
         importances=_importances(pipeline, features),
     )
+
+
+def _choose_threshold(pipeline: Pipeline, X_train: pd.DataFrame, y_train: pd.Series, seed: int) -> float:
+    """Lowest-cost threshold on out-of-fold TRAIN predictions, so the test set stays untouched.
+
+    cost = COST_RATIO * missed fails + false alarms. Each OOF score comes from a model that never
+    saw that lot, so the scores look like what the final model gives on new lots.
+    """
+    cv = StratifiedKFold(CV_FOLDS, shuffle=True, random_state=seed)
+    proba = cross_val_predict(pipeline, X_train, y_train, cv=cv, method="predict_proba")[:, 1]
+    is_fail = y_train.to_numpy() == 1
+    candidates = np.unique(proba)
+    costs = [COST_RATIO * np.sum(is_fail & (proba <= t)) + np.sum(~is_fail & (proba > t)) for t in candidates]
+    return float(candidates[int(np.argmin(costs))])
 
 
 def _logistic_pipeline(seed: int) -> Pipeline:
