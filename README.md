@@ -67,7 +67,14 @@ Agent on 10 golden questions: mention recall __, expected-tool rate __, median l
   sensitive to that guess. At 0.09 the test set gives precision 0.17 / recall 0.46 (12 of 26 fails,
   ~2.6x the hit rate of random inspection). The test set has only 26 fails, so these numbers are
   noisy, and the forest's probabilities are not calibrated (it rarely scores above 0.3).
-- Why BM25 over embeddings for these notes:
+- Why BM25 over embeddings for these notes: the notes are short and full of sensor IDs. An
+  engineer searching for s519 needs the s519 note, not the s510 one, and embeddings tend to treat
+  near-identical IDs as similar. BM25 matches exact tokens, needs no model or API call, and every
+  score can be explained term by term. The catch with only 12 notes: IDF comes from this tiny
+  corpus, so "should" looks as rare as "s510" (IDF 2.16 each), and the full q07 sentence ranks the
+  escalation note above the s510 note. I kept BM25 plain and have the `search_notes` tool ask the
+  LLM for keyword queries ("s510 high"); the eval checks whether that holds. A larger system would
+  use hybrid search (BM25 + embeddings).
 - Why two roles (investigator + writer) instead of one agent:
 - How tool errors are handled and why:
 - Free-model fallback and what it costs in latency:
