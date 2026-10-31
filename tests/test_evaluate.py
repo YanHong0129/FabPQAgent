@@ -36,3 +36,9 @@ def test_summarize():
     assert s["tool_use_rate"] == pytest.approx(2 / 3)
     assert s["median_latency_s"] == pytest.approx(3.0)
     assert s["total_tokens"] == 600 and s["n"] == 3
+
+
+def test_must_mention_accepts_equivalent_wordings():
+    item = GoldenItem("q1", "Q?", ("out of control|out of statistical control", "6.6|0.066"), "spc_check")
+    inv = Investigation("Q?", report="s059 is out of statistical control; fail rate 0.066")
+    assert score(item, inv).mention_recall == pytest.approx(1.0)

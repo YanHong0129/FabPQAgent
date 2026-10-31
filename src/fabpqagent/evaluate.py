@@ -19,7 +19,8 @@ runs with nothing changed (the LLMJudge noise-floor idea, applied to an agent).
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+import statistics
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from fabpqagent.agent import Investigation
@@ -48,20 +49,71 @@ class Score:
 
 
 def load_golden(path: Path = GOLDEN_PATH) -> list[GoldenItem]:
-    raise NotImplementedError
+    lines = [line for line in Path(path).read_text(encoding="utf-8").splitlines() if line.strip()]
+    return [_golden_item(json.loads(line)) for line in lines]
+
+
+def _golden_item(raw: dict) -> GoldenItem:
+    return GoldenItem(raw["id"], raw["question"], tuple(raw["must_mention"]), raw["expected_tool"])
 
 
 def score(item: GoldenItem, inv: Investigation) -> Score:
-    raise NotImplementedError
+    report = inv.report.lower()
+    found = sum(_mentioned(phrase, report) for phrase in item.must_mention)
+    return Score(
+        id=item.id,
+        mention_recall=found / len(item.must_mention) if item.must_mention else 1.0,
+        used_expected_tool=any(step.tool == item.expected_tool for step in inv.steps),
+        tokens=inv.prompt_tokens + inv.completion_tokens,
+        latency_s=inv.latency_s,
+        stop_reason=inv.stop_reason,
+    )
+
+
+def _mentioned(phrase: str, report: str) -> bool:
+    """'a|b' accepts either wording; only list wordings that mean the same thing."""
+    return any(wording.strip().lower() in report for wording in phrase.split("|"))
 
 
 def summarize(scores: list[Score]) -> dict[str, float]:
     """Keys: mean_mention_recall, tool_use_rate, median_latency_s, total_tokens, n."""
-    raise NotImplementedError
+    if not scores:
+        return {"mean_mention_recall": 0.0, "tool_use_rate": 0.0, "median_latency_s": 0.0, "total_tokens": 0, "n": 0}
+    return {
+        "mean_mention_recall": statistics.mean(s.mention_recall for s in scores),
+        "tool_use_rate": statistics.mean(s.used_expected_tool for s in scores),
+        "median_latency_s": statistics.median(s.latency_s for s in scores),
+        "total_tokens": sum(s.tokens for s in scores),
+        "n": len(scores),
+    }
+
+
+def run_suite(items: list[GoldenItem]) -> tuple[list[Score], list[dict]]:
+    """Run the live agent on every item. One failing question is recorded, not fatal."""
+    from fabpqagent import db, model
+    from fabpqagent.agent import investigate
+    from fabpqagent.llm import LLMError, OpenRouterLLM
+    from fabpqagent.retrieval import NoteIndex, load_notes
+    from fabpqagent.tools import ToolContext
+
+    ctx = ToolContext(lots=db.load_lots(), model=model.load(model.MODEL_PATH), notes=NoteIndex(load_notes()))
+    llm = OpenRouterLLM()
+    scores, rows = [], []
+    for item in items:
+        try:
+            inv = investigate(item.question, llm, ctx, use_memory=False)  # no leaks between items
+        except LLMError as err:
+            inv = Investigation(item.question, report=f"(LLM error: {err})", stop_reason="error")
+        result = score(item, inv)
+        scores.append(result)
+        rows.append({**asdict(result), "question": item.question, "report": inv.report,
+                     "tools": [step.tool for step in inv.steps], "models": inv.models})
+        print(f"{item.id}: recall {result.mention_recall:.2f}, tool {result.used_expected_tool}, "
+              f"{result.tokens} tokens, {result.latency_s:.1f}s, {result.stop_reason}", flush=True)
+    return scores, rows
 
 
 if __name__ == "__main__":
-    # TODO: build ToolContext (load lots, load model, NoteIndex), OpenRouterLLM(),
-    # run investigate() for every golden item (use_memory=False so items don't leak into each other),
-    # score, save RESULTS_PATH, print summary.
-    raise NotImplementedError
+    scores, rows = run_suite(load_golden())
+    RESULTS_PATH.write_text(json.dumps(rows, indent=1), encoding="utf-8")
+    print(json.dumps(summarize(scores), indent=1))
