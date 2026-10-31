@@ -36,6 +36,7 @@ TOKEN_BUDGET = 40_000
 MAX_RECALLED_CASES = 3
 LOT_PATTERN = re.compile(r"lot\s*(\d+)", re.IGNORECASE)
 SENSOR_PATTERN = re.compile(r"\bs\d{3}\b", re.IGNORECASE)
+SENTENCE_END = re.compile(r"(?<=[.!?])\s+")  # whitespace that follows . ! or ?
 
 INVESTIGATOR_PROMPT = """You are a product-quality investigator in a semiconductor fab. You answer a
 process engineer's question by gathering evidence with tools.
@@ -158,11 +159,11 @@ def _investigator_prompt(past: list[memory.Case]) -> str:
 
 
 def _remember(inv: Investigation) -> None:
-    if not inv.report:
-        return
+    if inv.stop_reason != "done" or not inv.report:
+        return  # an unfinished investigation's guess must not become a "past finding"
     memory.save_case(
         question=inv.question,
-        finding=inv.report.splitlines()[0],
+        finding=SENTENCE_END.split(inv.report.splitlines()[0], maxsplit=1)[0],
         lots=_lot_ids(f"{inv.question} {inv.evidence}"),
         sensors=_sensor_ids(f"{inv.evidence} {inv.report}"),
     )

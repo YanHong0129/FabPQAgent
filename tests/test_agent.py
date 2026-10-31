@@ -105,3 +105,15 @@ def test_memory_saved_and_recalled():
 def test_use_memory_false_neither_reads_nor_writes():
     agent.investigate("Why did lot 2 fail?", ScriptedLLM([text_reply("e"), text_reply("r")]), ctx=None, use_memory=False)
     assert memory.load_cases() == []
+
+
+def test_memory_skips_unfinished_investigations():
+    replies = [tool_reply("query_lots", '{"sql": "SELECT 1"}', f"c{i}") for i in range(2)] + [text_reply("Maybe s000.")]
+    agent.investigate("Why is lot 7 bad?", ScriptedLLM(replies), ctx=None, max_turns=2)
+    assert memory.load_cases() == []  # a max_turns guess must not become a "past finding"
+
+
+def test_memory_finding_is_first_sentence():
+    llm = ScriptedLLM([text_reply("- s059 high"), text_reply("Lot 2 failed due to s059. It read 23.8 vs 2.6.")])
+    agent.investigate("Why did lot 2 fail?", llm, ctx=None)
+    assert memory.load_cases()[0].finding == "Lot 2 failed due to s059."
