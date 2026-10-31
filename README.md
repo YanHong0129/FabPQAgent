@@ -75,7 +75,16 @@ Agent on 10 golden questions: mention recall __, expected-tool rate __, median l
   escalation note above the s510 note. I kept BM25 plain and have the `search_notes` tool ask the
   LLM for keyword queries ("s510 high"); the eval checks whether that holds. A larger system would
   use hybrid search (BM25 + embeddings).
-- Why two roles (investigator + writer) instead of one agent:
-- How tool errors are handled and why:
+- Why two roles (investigator + writer) instead of one agent: the investigator's context fills
+  with raw tool output (CSV rows, SPC lot lists) and is re-read on every turn. The writer gets only
+  its prompt, the question and the evidence, so its call is short and cheap, and with no tool
+  schemas passed it cannot call tools or wander off. It always runs, even after a turn or token
+  budget stop; it is then told the evidence may be incomplete so it says so instead of guessing.
+- How tool errors are handled and why: `execute` never raises. An unknown tool, invalid JSON,
+  a wrong argument type, a lot that does not exist, non-SELECT SQL, or any unexpected exception
+  comes back as an `Error: ...` observation with a specific hint (e.g. the valid lot_id range), so
+  the model can fix its call on the next turn and one bad call never crashes the investigation.
+  SQL also runs on a read-only connection as a second line of defence. Observations are capped at
+  2,000 characters with a truncation notice, because every token is re-read on every later turn.
 - Free-model fallback and what it costs in latency:
 - What the eval does and does not measure:
