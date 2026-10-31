@@ -84,6 +84,10 @@ class OpenRouterLLM:
                 continue
             msg = resp.choices[0].message
             calls = tuple(ToolCall(c.id, c.function.name, c.function.arguments or "{}") for c in (msg.tool_calls or []))
+            if not (msg.content or "").strip() and not calls:
+                # reasoning models can spend all of max_tokens thinking and return no text
+                errors.append(f"{model}: empty reply")
+                continue
             usage = resp.usage
             return LLMReply(
                 content=msg.content or "",

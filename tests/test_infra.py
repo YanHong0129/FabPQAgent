@@ -44,3 +44,23 @@ def test_memory_round_trip(tmp_path, monkeypatch):
     memory.save_case("why lot 2?", "s059 high", [2], ["s059"])
     cases = memory.load_cases()
     assert len(cases) == 1 and cases[0].lots == (2,) and cases[0].sensors == ("s059",)
+
+
+def _fake_completion(content):
+    from types import SimpleNamespace
+    message = SimpleNamespace(content=content, tool_calls=None)
+    usage = SimpleNamespace(prompt_tokens=10, completion_tokens=1200 if not content else 20)
+    return SimpleNamespace(choices=[SimpleNamespace(message=message)], usage=usage)
+
+
+def test_empty_reply_falls_back_to_next_model():
+    # A reasoning model can spend all of max_tokens thinking and return no text: treat it as a failure.
+    from types import SimpleNamespace
+    from fabpqagent.llm import OpenRouterLLM
+
+    replies = {"thinker": _fake_completion(""), "writer": _fake_completion("A report.")}
+    llm = OpenRouterLLM(models=("thinker", "writer"), api_key="test-key")
+    llm._client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
+        create=lambda model, **_: replies[model])))
+    reply = llm.chat([{"role": "user", "content": "hi"}])
+    assert (reply.model, reply.content) == ("writer", "A report.")
