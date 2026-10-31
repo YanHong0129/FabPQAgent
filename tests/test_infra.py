@@ -64,3 +64,25 @@ def test_empty_reply_falls_back_to_next_model():
         create=lambda model, **_: replies[model])))
     reply = llm.chat([{"role": "user", "content": "hi"}])
     assert (reply.model, reply.content) == ("writer", "A report.")
+
+
+def test_rate_limited_round_waits_then_retries(monkeypatch):
+    from types import SimpleNamespace
+    from fabpqagent import llm as llm_module
+    from fabpqagent.llm import OpenRouterLLM
+
+    class RateLimited(Exception):
+        status_code = 429
+
+    calls, waits = [], []
+    def create(model, **_):
+        calls.append(model)
+        if len(calls) == 1:
+            raise RateLimited("429 quota exceeded")
+        return _fake_completion("A report.")
+
+    monkeypatch.setattr(llm_module.time, "sleep", waits.append)
+    llm = OpenRouterLLM(models=("only",), api_key="test-key")
+    llm._client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+    assert llm.chat([{"role": "user", "content": "hi"}]).content == "A report."
+    assert calls == ["only", "only"] and waits == [llm_module.RATE_LIMIT_WAIT_S]

@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 DEFAULT_MODELS = ("google/gemma-4-26b-a4b-it:free", "nvidia/nemotron-3.5-lightning:free")
 REQUEST_TIMEOUT_S = 90
+RATE_LIMIT_WAIT_S = 60   # free tiers cap tokens per minute; one wait usually clears it
 
 
 @dataclass(frozen=True)
@@ -68,7 +69,19 @@ class OpenRouterLLM:
         self._client = OpenAI(base_url=OPENROUTER_BASE_URL, api_key=key, timeout=REQUEST_TIMEOUT_S, max_retries=1)
 
     def chat(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]] | None = None) -> LLMReply:
-        errors = []
+        errors: list[str] = []
+        reply, rate_limited = self._try_models(messages, tools, errors)
+        if reply is None and rate_limited:
+            time.sleep(RATE_LIMIT_WAIT_S)
+            reply, _ = self._try_models(messages, tools, errors)
+        if reply is None:
+            raise LLMError("All models failed:\n" + "\n".join(errors))
+        return reply
+
+    def _try_models(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]] | None,
+                    errors: list[str]) -> tuple[LLMReply | None, bool]:
+        """One pass over the fallback models. Returns (reply or None, whether any model was rate-limited)."""
+        rate_limited = False
         for model in self.models:
             start = time.perf_counter()
             try:
@@ -78,6 +91,7 @@ class OpenRouterLLM:
                 )
             except Exception as err:  # SDK raises many types (rate limit, 5xx, timeout)
                 errors.append(f"{model}: {err}")
+                rate_limited = rate_limited or getattr(err, "status_code", None) == 429
                 continue
             if not resp.choices:
                 errors.append(f"{model}: no choices returned")
@@ -96,8 +110,8 @@ class OpenRouterLLM:
                 prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
                 completion_tokens=getattr(usage, "completion_tokens", 0) or 0,
                 latency_s=time.perf_counter() - start,
-            )
-        raise LLMError("All models failed:\n" + "\n".join(errors))
+            ), rate_limited
+        return None, rate_limited
 
 
 @dataclass
