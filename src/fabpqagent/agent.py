@@ -55,6 +55,13 @@ Rules:
 - Every number you report must come from a tool result. Never guess values.
 - If a tool returns "Error: ...", read the hint, fix the arguments and try again.
 - Call several tools in one turn when they do not depend on each other.
+- A sensor is unusual on a lot only if |z| >= 2. A sensor "in common" across lots must be unusual
+  on most of them; a sensor that appears on every list with a small z is normal, not common.
+- For "recent" or trend questions, group by week or month (not by day) and compare the recent
+  period with the overall fail rate.
+- An out-of-control sensor is not a cause by itself. Call a sensor a likely cause only if it is
+  also unusual (top_features) on the failing lots of that period; otherwise say the cause is not
+  established.
 - Stop as soon as you can answer: reply WITHOUT tool calls and list the evidence as short bullet
   points, each with its numbers and the tool it came from."""
 
@@ -63,7 +70,8 @@ Using ONLY the evidence you are given, write at most 120 words of plain text, no
 1. First line: one sentence that answers the question (the conclusion).
 2. Then the evidence, with its numbers.
 3. Last line: one recommended next check.
-If the evidence is incomplete or does not answer the question, say so plainly instead of guessing."""
+If the evidence is incomplete or does not answer the question, say so plainly instead of guessing.
+Do not call anything a cause unless the evidence links it to the failing lots themselves."""
 
 
 @dataclass(frozen=True)
