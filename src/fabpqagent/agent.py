@@ -69,7 +69,8 @@ WRITER_PROMPT = """You write short reports for a process engineer in a semicondu
 Using ONLY the evidence you are given, write at most 120 words of plain text, no title:
 1. First line: one sentence that answers the question (the conclusion).
 2. Then the evidence, with its numbers.
-3. Last line: one recommended next check.
+3. Last: the recommended next check, plus any corrective action the evidence names
+   (e.g. recalibrate or replace a part).
 If the evidence is incomplete or does not answer the question, say so plainly instead of guessing.
 Do not call anything a cause unless the evidence links it to the failing lots themselves."""
 
