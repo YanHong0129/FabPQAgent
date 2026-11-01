@@ -6,5 +6,5 @@
 {"id": "q06", "question": "Has sensor s519 shifted compared with the baseline period?", "must_mention": ["out of control|out of statistical control", "shift|rule of eight"], "expected_tool": "spc_check"}
 {"id": "q07", "question": "What should I check if s510 is running high?", "must_mention": ["MFC", "calibrat"], "expected_tool": "search_notes"}
 {"id": "q08", "question": "How many lots were produced in August 2008, and how many failed?", "must_mention": ["555", "51"], "expected_tool": "query_lots"}
-{"id": "q09", "question": "Pick the last five failing lots and tell me which sensor they have in common.", "must_mention": ["s091", "s028"], "expected_tool": "top_features"}
+{"id": "q09", "question": "Is any sensor unusual (|z| >= 2) on at least three of the last five failing lots?", "must_mention": ["1519", "no sensor|none of the"], "expected_tool": "top_features"}
 {"id": "q10", "question": "The fail rate seems high recently. Is it, and what is the likely cause?", "must_mention": ["6.6|0.066"], "expected_tool": "query_lots"}
