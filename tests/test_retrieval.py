@@ -32,3 +32,10 @@ def test_shipped_notes_load():
     notes = load_notes(NOTES_DIR)
     assert len(notes) >= 10
     assert NoteIndex(notes).search("s059")[0].note_id.startswith("01")
+
+
+def test_hit_carries_the_whole_note_including_its_action():
+    # notes are 300-480 chars and end with the recommended action; a 300-char cut dropped it
+    hits = NoteIndex(load_notes()).search("s510 high")
+    assert hits[0].note_id == "03-s510-gas-flow"
+    assert "recalibrate or replace the MFC" in hits[0].snippet

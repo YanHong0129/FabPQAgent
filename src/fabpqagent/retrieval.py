@@ -23,7 +23,7 @@ NOTES_DIR = ROOT / "data" / "notes"
 K1 = 1.5
 B = 0.75
 TOKEN_RE = re.compile(r"[a-z0-9]+")
-SNIPPET_CHARS = 300
+SNIPPET_CHARS = 600   # notes are 300-480 chars: carry the whole note, including its "Action:" line
 
 
 @dataclass(frozen=True)
@@ -38,7 +38,7 @@ class Hit:
     note_id: str
     title: str
     score: float
-    snippet: str    # first 300 characters of the body
+    snippet: str    # first SNIPPET_CHARS characters of the body (whole note today)
 
 
 def tokenize(text: str) -> list[str]:
