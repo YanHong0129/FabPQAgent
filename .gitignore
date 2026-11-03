@@ -9,3 +9,4 @@ eval/results*.json
 .DS_Store
 data/*.joblib
 ~$*
+docs/*.docx
