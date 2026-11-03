@@ -57,7 +57,7 @@ Each stub's docstring is the spec; its test file is the definition of done.
 - [X]  `evaluate.py`, run it, paste the summary table below
 - [X]  Look at the worst 2 questions; fix a prompt or tool; re-run; note what changed
 - [X]  Screenshot the Streamlit app into `docs/`, fill in Results and Design decisions
-- [ ]  Push to GitHub (check `.env` is not committed)
+- [X]  Push to GitHub (check `.env` is not committed)
 
 ## Results
 
