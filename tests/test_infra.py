@@ -1,4 +1,4 @@
-"""Tests for the PROVIDED modules (data, db, llm, memory). These should already pass."""
+"""Tests for the scaffold modules (data, db, llm, memory)."""
 import pytest
 
 from fabpqagent import memory

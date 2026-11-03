@@ -1,7 +1,7 @@
-"""PROVIDED. Long-term memory of past investigations, stored as a JSON list.
+"""Long-term memory of past investigations, stored as a JSON list.
 
-You decide (Day 2) what the agent saves and how past cases are fed back in, e.g. inject the
-3 most recent cases that mention the same lot or sensor into the system prompt.
+agent.py decides what is saved and how past cases are fed back in: up to 3 recent cases that
+mention the same lot or sensor go into the investigator's system prompt.
 """
 from __future__ import annotations
 

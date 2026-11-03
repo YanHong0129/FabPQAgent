@@ -1,4 +1,4 @@
-"""PROVIDED. Downloads the UCI SECOM dataset and loads it into SQLite.
+"""Downloads the UCI SECOM dataset and loads it into SQLite.
 
 SECOM: 1,567 production lots from a semiconductor fab, 590 anonymised sensor readings each,
 and a pass/fail label from in-house line testing (104 fails, about 6.6%).

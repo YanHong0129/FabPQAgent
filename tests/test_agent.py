@@ -1,4 +1,4 @@
-"""Day 2: agent.py. No network and no model needed: tools.execute is patched, the LLM is scripted."""
+"""Tests for agent.py. No network and no model needed: tools.execute is patched, the LLM is scripted."""
 import pytest
 
 from fabpqagent import agent, memory, tools

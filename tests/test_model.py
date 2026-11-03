@@ -1,4 +1,4 @@
-"""Day 1: model.py"""
+"""Tests for model.py."""
 import math
 
 import numpy as np

@@ -1,4 +1,4 @@
-"""Day 3: evaluate.py"""
+"""Tests for evaluate.py."""
 import json
 
 import pytest

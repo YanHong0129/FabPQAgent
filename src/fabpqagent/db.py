@@ -1,4 +1,4 @@
-"""PROVIDED. Read-only access to the SECOM SQLite database.
+"""Read-only access to the SECOM SQLite database.
 
 The agent can send SQL written by the model, so `run_query` is a guarded gate:
 SELECT/WITH only, one statement, read-only connection, and a row cap.

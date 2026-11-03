@@ -1,4 +1,4 @@
-"""Day 2: tools.py (needs Day 1 model + Day 2 retrieval)"""
+"""Tests for tools.py (needs the trained model and the note index)."""
 import json
 import re
 

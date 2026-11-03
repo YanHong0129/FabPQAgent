@@ -1,13 +1,11 @@
-"""DAY 2 — YOU WRITE THIS. BM25 search over troubleshooting notes (the "R" in RAG).
+"""BM25 search over troubleshooting notes (the "R" in RAG).
 
 Tests: tests/test_retrieval.py
 
-You built BM25 in CS329z Problem 3; write it again here from memory (don't copy course code
-into a public repo). The notes are short markdown files in data/notes/: the first line is
-"# <title>", the rest is the body.
-
-Design question: why BM25 and not embeddings for 15 short notes full of sensor IDs like "s059"?
-(Exact-token match matters; embeddings blur identifiers. A real system would do hybrid search.)
+The notes are short markdown files in data/notes/: the first line is "# <title>", the rest is
+the body. BM25 rather than embeddings because the 12 notes are full of sensor IDs like "s059",
+where an exact token match matters and embeddings blur identifiers (a larger system would use
+hybrid search).
 """
 from __future__ import annotations
 

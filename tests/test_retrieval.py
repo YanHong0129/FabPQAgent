@@ -1,4 +1,4 @@
-"""Day 2: retrieval.py"""
+"""Tests for retrieval.py."""
 from fabpqagent.retrieval import NOTES_DIR, NoteIndex, load_notes
 
 

@@ -1,8 +1,8 @@
-"""DAY 1 — YOU WRITE THIS. Statistical process control (SPC) check for one sensor.
+"""Statistical process control (SPC) check for one sensor.
 
 Tests: tests/test_spc.py
 
-Background (the job ad names SPC explicitly):
+Background:
 - Control limits come from a stable BASELINE period: centre = mean, UCL/LCL = mean +/- 3 sigma.
 - Western Electric rule 1: any single point beyond 3 sigma  -> out of control.
 - Western Electric rule 4 (often called "rule of 8"): 8 consecutive points on the same side of

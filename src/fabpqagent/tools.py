@@ -1,9 +1,9 @@
-"""DAY 2 — YOU WRITE THIS. The agent's tools: JSON schemas the model sees + the code that runs them.
+"""The agent's tools: JSON schemas the model sees + the code that runs them.
 
 Tests: tests/test_tools.py
 
-Same rule as CS329z P5/P6: the model never touches your code. It writes a call as text; you
-validate it, run it, and return a STRING observation. Errors are observations too, never
+The model never touches this code. It writes a call as text; execute() validates it, runs it,
+and returns a STRING observation. Errors are observations too, never
 exceptions: "Error: lot 99999 does not exist" lets the model fix its own mistake.
 
 Keep observations small (every token in an observation is paid for on every later turn): summarise, round floats to

@@ -1,12 +1,13 @@
-"""DAY 1 — YOU WRITE THIS. Predict which lots fail, and explain why.
+"""Predict which lots fail, and explain why.
 
-Tests: tests/test_model.py   Run: uv run pytest tests/test_model.py
+Tests: tests/test_model.py   Run: uv run python -m fabpqagent.model (saves data/model.joblib)
 
-Things to be ready to explain in the interview:
-- Why accuracy is useless here (only 6.6% of lots fail: "always pass" scores 93%).
-- Why PR-AUC (average precision) instead of ROC-AUC for rare failures.
-- How you chose the decision threshold (a fab cares more about missing a bad lot than a false alarm).
-- Why you fit imputation/scaling inside the Pipeline (no leakage from the test set).
+Design notes:
+- Accuracy is useless here (only 6.6% of lots fail: "always pass" scores 93%), so models are
+  compared on PR-AUC (average precision), whose baseline is the fail rate.
+- The decision threshold is chosen by cost (a missed bad lot costs more than a false alarm), on
+  out-of-fold training predictions, never on the test set.
+- Imputation and scaling are fitted inside the Pipeline, so nothing leaks from the test set.
 """
 from __future__ import annotations
 

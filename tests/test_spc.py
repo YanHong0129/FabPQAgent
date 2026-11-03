@@ -1,4 +1,4 @@
-"""Day 1: spc.py"""
+"""Tests for spc.py."""
 import numpy as np
 import pandas as pd
 import pytest

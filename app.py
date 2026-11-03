@@ -1,7 +1,7 @@
-"""PROVIDED. Streamlit front end.   Run: uv run streamlit run app.py
+"""Streamlit front end.   Run: uv run streamlit run app.py
 
-Works once model.py (Day 1) and retrieval/tools/agent (Day 2) are implemented and
-data/model.joblib exists (uv run python -m fabpqagent.model).
+Needs data/secom.db (uv run python -m fabpqagent.data) and data/model.joblib
+(uv run python -m fabpqagent.model).
 """
 from __future__ import annotations
 
@@ -66,7 +66,7 @@ if question:
         with st.spinner("Investigating..."):
             render(investigate(question, llm, ctx))
     except NotImplementedError as err:
-        st.warning(f"Not built yet: {err or 'a stub still raises NotImplementedError'}. Finish Day 1-2 first.")
+        st.warning(f"Not built yet: {err or 'a stub still raises NotImplementedError'}.")
     except FileNotFoundError as err:
         st.error(str(err))
     except Exception as err:  # show the failure in the UI instead of a blank page

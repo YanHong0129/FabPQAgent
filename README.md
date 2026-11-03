@@ -24,15 +24,10 @@ uv run pytest                     # offline tests (no API calls)
 
 ## Who wrote what
 
-
-| File                                                              | Status            |
-| ----------------------------------------------------------------- | ----------------- |
-| `data.py`, `db.py`, `llm.py`, `memory.py`, `app.py`, tests        | provided scaffold |
-| `model.py`, `spc.py`                                              | **Day 1, you**    |
-| `retrieval.py`, `tools.py`, `agent.py`                            | **Day 2, you**    |
-| `evaluate.py`, `eval/golden.jsonl` answers, this README's Results | **Day 3, you**    |
-
-Each stub's docstring is the spec; its test file is the definition of done.
+| File | Status |
+| --- | --- |
+| `data.py`, `db.py`, `llm.py`, `memory.py`, `app.py`, test files | provided scaffold (I added the empty-reply fallback and rate-limit retry to `llm.py`, and new test cases) |
+| `model.py`, `spc.py`, `retrieval.py`, `tools.py`, `agent.py`, `evaluate.py`, `eval/golden.jsonl` answers, `docs/` | written for this project |
 
 ## Results
 

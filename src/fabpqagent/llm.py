@@ -1,7 +1,7 @@
-"""PROVIDED. OpenRouter chat client with tool calling, model fallback and usage tracking.
+"""OpenRouter chat client with tool calling, model fallback and usage tracking.
 
 `LLM` is the interface the agent depends on. `ScriptedLLM` replays fixed replies so the agent
-can be tested without network calls (same idea as CS329z's ScriptedLM).
+can be tested without network calls.
 """
 from __future__ import annotations
 

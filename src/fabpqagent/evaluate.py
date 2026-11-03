@@ -1,20 +1,19 @@
-"""DAY 3 — YOU WRITE THIS. Evaluate the agent on eval/golden.jsonl.
+"""Evaluate the agent on eval/golden.jsonl.
 
 Tests: tests/test_evaluate.py      Run: uv run python -m fabpqagent.evaluate
 
 Each golden line: {"id": "q01", "question": "...", "must_mention": ["s059", "fail"], "expected_tool": "top_features"}
-Fill in must_mention for each question AFTER Day 1, from facts you checked yourself with SQL.
+must_mention holds facts checked by hand with SQL; "a|b" accepts either of two equivalent wordings.
 
-Score per question (keep it deterministic and cheap; this is the same lesson as LLMJudge:
-know what your metric measures):
+Score per question (deterministic and cheap, unlike an LLM judge; see the README for what it
+does not measure):
   - mention_recall = fraction of must_mention strings found in the report (case-insensitive)
   - used_expected_tool = expected_tool appears in the investigation's steps
   - tokens, latency_s, stop_reason
 Write all rows to eval/results.json and print a summary: mean mention_recall, tool-use rate,
 median latency, total tokens.
 
-Stretch (only if time): run the suite twice and report how much mention_recall moves between
-runs with nothing changed (the LLMJudge noise-floor idea, applied to an agent).
+Running the suite twice with nothing changed shows the run-to-run noise floor.
 """
 from __future__ import annotations
 

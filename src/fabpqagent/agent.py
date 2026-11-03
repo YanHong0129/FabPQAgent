@@ -1,4 +1,4 @@
-r"""DAY 2 — YOU WRITE THIS. Two-role agent: an INVESTIGATOR that uses tools, then a WRITER
+r"""Two-role agent: an INVESTIGATOR that uses tools, then a WRITER
 that turns the evidence into a short report for an engineer.
 
 Tests: tests/test_agent.py
@@ -7,7 +7,7 @@ Why two roles: the investigator's context fills
 with raw tool output; the writer gets only the question + the evidence, so its prompt is short
 (cheaper, faster) and it can't call tools or wander off.
 
-Loop rules (you wrote these in CS329z P7, now do them with real tool calling):
+Loop rules:
 - Stop when the model replies with no tool calls (it's done) -> stop_reason "done"
 - Stop after max_turns model calls                           -> stop_reason "max_turns"
 - Stop if total tokens would exceed token_budget (check BEFORE each call) -> "token_budget"
@@ -16,8 +16,9 @@ Loop rules (you wrote these in CS329z P7, now do them with real tool calling):
 
 Memory: before investigating, load_cases() and put the most relevant past findings (same lot
 ids or sensors mentioned in the question; max 3) into the investigator's system prompt.
-After the writer finishes, save_case(): finding = first line of the report, lots = lot ids in the
-question/evidence (regex r"lot\s*(\d+)"), sensors = ids like "s059" in the evidence/report.
+After the writer finishes, and only if the investigation finished ("done"), save_case():
+finding = first sentence of the report, lots = lot ids in the question/evidence
+(regex r"lot\s*(\d+)"), sensors = ids like "s059" in the evidence/report.
 
 The writer ALWAYS runs, even after max_turns or token_budget (it reports whatever evidence exists).
 """
