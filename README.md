@@ -56,10 +56,12 @@ Each stub's docstring is the spec; its test file is the definition of done.
 
 - [X]  `evaluate.py`, run it, paste the summary table below
 - [X]  Look at the worst 2 questions; fix a prompt or tool; re-run; note what changed
-- [ ]  Screenshot the Streamlit app into `docs/`, fill in Results and Design decisions
+- [X]  Screenshot the Streamlit app into `docs/`, fill in Results and Design decisions
 - [ ]  Push to GitHub (check `.env` is not committed)
 
 ## Results
+
+A walkthrough of one question, with screenshots of the app: [docs/demo.md](docs/demo.md).
 
 **Model:** test PR-AUC 0.186 vs baseline 0.066 (logistic regression: 0.149); precision 0.17 /
 recall 0.46 at threshold 0.09.
