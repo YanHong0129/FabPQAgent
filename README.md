@@ -34,31 +34,6 @@ uv run pytest                     # offline tests (no API calls)
 
 Each stub's docstring is the spec; its test file is the definition of done.
 
-## 3-day plan
-
-### Day 1: model + SPC (`uv run pytest tests/test_model.py tests/test_spc.py`)
-
-- [X]  Explore in a notebook/REPL: fail rate, missing data per sensor, fails over time
-- [X]  `select_features`, `train` (LogisticRegression first, then RandomForest; keep the better PR-AUC)
-- [X]  Choose a threshold deliberately (precision/recall curve) and write down why
-- [X]  `predict_fail`, `top_features`, `save`/`load`; `python -m fabpqagent.model` saves `data/model.joblib`
-- [X]  `spc_check` (rule 1 + rule of eight)
-- [X]  Fill `must_mention` in `eval/golden.jsonl` from facts you verify yourself with SQL
-
-### Day 2: agent (`uv run pytest tests/test_retrieval.py tests/test_tools.py tests/test_agent.py`)
-
-- [X]  BM25 `NoteIndex` (from memory, not the CS329Z code)
-- [X]  Four more tool schemas + `execute` with errors-as-observations
-- [X]  `investigate`: investigator loop with budgets, writer call, memory
-- [X]  Write the two prompts; try 3 questions live in `uv run streamlit run app.py`
-
-### Day 3: evaluate + polish (`uv run pytest tests/test_evaluate.py`)
-
-- [X]  `evaluate.py`, run it, paste the summary table below
-- [X]  Look at the worst 2 questions; fix a prompt or tool; re-run; note what changed
-- [X]  Screenshot the Streamlit app into `docs/`, fill in Results and Design decisions
-- [X]  Push to GitHub (check `.env` is not committed)
-
 ## Results
 
 A walkthrough of one question, with screenshots of the app: [docs/demo.md](docs/demo.md).
