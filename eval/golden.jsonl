@@ -1,9 +1,9 @@
 {"id": "q01", "question": "What is the overall fail rate across all lots?", "must_mention": ["104", "6.6|0.066"], "expected_tool": "query_lots"}
 {"id": "q02", "question": "Which week had the highest number of failing lots?", "must_mention": ["22", "aug|week 33|2008-33"], "expected_tool": "query_lots"}
 {"id": "q03", "question": "Lot 2 failed. Which sensors look most unusual on it?", "must_mention": ["s510", "s103", "s059"], "expected_tool": "top_features"}
-{"id": "q04", "question": "Is sensor s059 in statistical control?", "must_mention": ["out of control|out of statistical control", "shift|rule of eight|one side of the center"], "expected_tool": "spc_check"}
+{"id": "q04", "question": "Is sensor s059 in statistical control?", "must_mention": ["out of control|out of statistical control|not in statistical control", "shift|rule of eight|one side of the center"], "expected_tool": "spc_check"}
 {"id": "q05", "question": "What is the predicted fail probability for lot 100, and did it actually fail?", "must_mention": ["0.0", "pass"], "expected_tool": "predict_fail"}
-{"id": "q06", "question": "Has sensor s519 shifted compared with the baseline period?", "must_mention": ["out of control|out of statistical control", "shift|rule of eight|one side of the center"], "expected_tool": "spc_check"}
+{"id": "q06", "question": "Has sensor s519 shifted compared with the baseline period?", "must_mention": ["out of control|out of statistical control|not in statistical control", "shift|rule of eight|one side of the center"], "expected_tool": "spc_check"}
 {"id": "q07", "question": "What should I check if s510 is running high?", "must_mention": ["MFC", "calibrat"], "expected_tool": "search_notes"}
 {"id": "q08", "question": "How many lots were produced in August 2008, and how many failed?", "must_mention": ["555", "51"], "expected_tool": "query_lots"}
 {"id": "q09", "question": "Is any sensor unusual (|z| >= 2) on at least three of the last five failing lots?", "must_mention": ["1519", "no sensor|none of the"], "expected_tool": "top_features"}

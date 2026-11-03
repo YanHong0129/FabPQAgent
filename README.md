@@ -73,8 +73,14 @@ recall 0.46 at threshold 0.09.
 | 2 | prompts: unusual = \|z\| ≥ 2, trends by week/month, when to claim a cause; retry on 429 | 0.80 | 1.0 | 9.2 s | 38,742 |
 | 3 | q09 rewritten (it was ambiguous) | 0.85 | 1.0 | 8.7 s | 45,582 |
 | 4 | nothing (repeat of run 3) | 0.85 | 1.0 | 11.4 s | 45,138 |
+| 5 | search hits carry the whole note (were cut at 300 chars) | 0.85 | 1.0 | 8.4 s | 44,885 |
+| 6 | writer keeps the corrective action, not just one next check | 0.90 | 1.0 | 9.1 s | 43,522 |
+| 7 | trend rule names the query and the evidence format | 0.90 (0.95 rescored) | 1.0 | 9.5 s | 52,813 |
+| 8 | removed the 6.6% leak from the prompt; complete trend SQL example | 0.94 on 8 (2 provider errors) | 1.0 | 12.1 s | 37,369 |
 
 Run 1's q10 failed on a rate limit (scored 0, no tokens counted), which is why its total is lowest.
+Run 8's q01 and q05 hit provider 502/504 errors; its recall is over the 8 questions that ran (q01
+rerun alone: 1.0). Rescored rows reuse the same reports after a metric fix, with no new LLM calls.
 
 - **The metric moved more than the agent at first.** Reading the reports showed two correct answers
   scored as misses (q02 said "week 33", q04 said "out of statistical control") and one wrong answer
@@ -86,9 +92,23 @@ Run 1's q10 failed on a rate limit (scored 0, no tokens counted), which is why i
 - **Noise floor:** runs 3 and 4 scored the same on every question, but q10's answers differed: run 3
   named s510 as the likely cause from a single lot, run 4 said the cause was not determined and hit
   `max_turns`. The score looked stable; the agent was not.
-- **Still failing:** q07 drops the note's calibration advice in every run (identical text, so a
-  stable writer omission, not noise). q10 compares October (6.1%) with September (2.9%) instead of
-  the overall 6.6%, so "the fail rate has increased" is misleading: October is below average.
+- **q07 had two root causes.** It dropped "recalibrate or replace the MFC" in runs 1-5 with identical
+  text, so not noise. First cause: `search_notes` cut every note at 300 chars and all 12 notes are
+  longer, so the model never saw the "Action:" line (run 5 fixed this and the score did not move).
+  Second cause: the writer rule "one recommended next check" kept only one of two actions that were
+  now in the evidence. Fixing both took q07 from 0.5 to 1.0 (run 6).
+- **q10 needed a concrete rule.** "Compare with the overall fail rate" was ignored (October 6.1% was
+  called an increase over September 2.9%, though the overall rate is 6.6%). Naming the query and
+  the evidence format fixed it (run 7), but the mean stayed at 0.90 because q01 regressed: it copied
+  the rule's `SELECT AVG(failed)` example and lost the fail count. A complete example query fixed it.
+- **Data leakage:** the investigator prompt said "About 6.6% of lots fail", q01's answer. Removed in
+  run 8; q01 now gets 104 / 1,567 / 0.066 from `query_lots`.
+- **A regression the metric missed:** the run 6 writer rule made reports end with "The evidence does
+  not provide a recommended next check". Recall did not change; the rule now asks for a next check
+  that follows from the evidence instead.
+- **Equivalent wordings are whack-a-mole:** q04 has been scored a miss for "out of statistical
+  control", "one side of the center" and "not in statistical control". The next step would be an LLM
+  judge, or asking the writer to reuse the tool's status words.
 
 ## Design decisions
 
