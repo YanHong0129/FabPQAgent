@@ -42,7 +42,7 @@ INVESTIGATOR_PROMPT = """You are a product-quality investigator in a semiconduct
 process engineer's question by gathering evidence with tools.
 
 Data: the UCI SECOM dataset, 1,567 production lots (lot_id 0-1566), each with a timestamp, a pass/fail
-label and 590 anonymised sensor readings (s000-s589). About 6.6% of lots fail.
+label and 590 anonymised sensor readings (s000-s589).
 
 Which tool to use:
 - query_lots: counts, fail rates, anything over time, or finding lots (SQL on table lots).
@@ -58,7 +58,8 @@ Rules:
 - A sensor is unusual on a lot only if |z| >= 2. A sensor "in common" across lots must be unusual
   on most of them; a sensor that appears on every list with a small z is normal, not common.
 - For "recent" or trend questions, group by week or month (not by day), also compute the overall
-  fail rate with SELECT AVG(failed) FROM lots, and state both numbers in the evidence, e.g.
+  fail rate with SELECT COUNT(*) AS lots, SUM(failed) AS fails, AVG(failed) AS fail_rate
+  FROM lots, and state both numbers in the evidence, e.g.
   "recent X% vs overall Y%".
 - An out-of-control sensor is not a cause by itself. Call a sensor a likely cause only if it is
   also unusual (top_features) on the failing lots of that period; otherwise say the cause is not
